@@ -40,7 +40,7 @@ App = (function() {
     }
 
     onReady() {
-      this.ui.pagesReady('Plotly', false);
+      this.ui.pagesReady('Image', false);
     }
 
   };

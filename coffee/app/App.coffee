@@ -29,7 +29,7 @@ class App
     @surf3d = new Surf3d( @stream, @ui )
 
   onReady:() =>
-    @ui.pagesReady( 'Plotly', false )
+    @ui.pagesReady( 'Image', false )
     return
 
   @NavbSubjects = ["Search","Contact","Settings","SignOn"]

@@ -1,27 +1,70 @@
 
 `import Util from '../util/Util.js'`
+`import UI   from '../ui/UI.js'`
 `import Base from '../ui/Base.js'`
 
 class Surf3d extends Base
 
   constructor:( stream, ui ) ->
     super(      stream, ui, 'Surf3d' )
-    @cname = 'Plots'
-    @created = false
+    @contents = { Image:{}, Plots:{}, Pivot:{} }
+    @cname    = 'Image'
+    @stream.subscribe( "Select", "Surf3d", (select) => @onSelect(select) )
 
-  ready:() =>
-    @stream.subscribe( "Select", "Surf3d", () => @onSelect() )
+  ready:(   cname ) =>
+    switch( cname )
+      when 'Image' then @readyImage()
+      when 'Plots' then @readyPlots()
+      when 'Pivot' then @readyPivot()
+      else
+        console.error( 'Surf3d.ready() unknown cname', cname )
+        @cname = 'Image'
+        @readyImage()
 
-  onSelect:() =>
-    return if @created
-    id = @name + @cname
-    @$pane = $( """<div id="#{id}" class="plotly-graph-div"></div>""" )
-    @pane.$.append( @$pane )
-    @geom = @pane.geom()
-    #console.log( 'Geom', @geom )
-    Plotly.plot(  id,  { data:@data(), layout:@layout(), frames:[], config:@config() } )
-    @created = true
+  onSelect:( select ) ->
+    switch(  select.intent )
+      when UI.SelectView then @readyImage()
+      when UI.SelectPane then @readyPlots()
+      else                    @readyImage()
+
+  hide:() ->
+    for own key, con of @contents
+      con.$.hide() if con.$?
+
+  readyImage:() =>
+    @cname = 'Image'
+    if not @contents.Image.$?
+      id = @name + @cname
+      @geom = @pane.geom()
+      style = "max-width:#{@geom.wp}px; max-height:#{@geom.hp}px;"
+      $c    = $( """<div id="#{id}"><img src="img/Surf3D.png" style="#{style}" /></div>""" )
+      @pane.$.append( $c )
+      @contents.Image.$ = $c
+    @hide()
+    @contents.Image.$.show()
+
+  readyPlots:() =>
+    @cname    = 'Plots'
+    if not @contents.Plots.$?
+      id = @name + @cname
+      $c = $( """<div id="#{id}" class="plotly-graph-div"></div>""" )
+      @pane.$.append( $c )
+      @contents.Plots.$ = $c
+      @geom = @pane.geom()
+      #console.log( 'Geom', @geom )
+      Plotly.plot(  id,  { data:@data(), layout:@layout(), frames:[], config:@config() } )
+    @hide()
+    @contents.Plots.$.show()
     return
+
+  readyPivot:() =>
+    if not @contents.Pivot.$?
+      id = @name + @cname
+      $c    = $("""<h1 id="#{id}" style=" display:grid; justify-self:center; align-self:center; ">#{@name}</h1>""" )
+      @pane.$.append( $c )
+      @contents.Pivot.$ = $c
+    @hide()
+    @contents.Pivot.$.show()
 
 
   config:() ->

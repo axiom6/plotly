@@ -1,42 +1,120 @@
 import Util from '../util/Util.js';
+import UI   from '../ui/UI.js';
 import Base from '../ui/Base.js';
 var Surf3d,
-  boundMethodCheck = function(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new Error('Bound instance method accessed before binding'); } };
+  boundMethodCheck = function(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new Error('Bound instance method accessed before binding'); } },
+  hasProp = {}.hasOwnProperty;
 
 Surf3d = class Surf3d extends Base {
   constructor(stream, ui) {
     super(stream, ui, 'Surf3d');
     this.ready = this.ready.bind(this);
-    this.onSelect = this.onSelect.bind(this);
-    this.cname = 'Plots';
-    this.created = false;
-  }
-
-  ready() {
-    boundMethodCheck(this, Surf3d);
-    return this.stream.subscribe("Select", "Surf3d", () => {
-      return this.onSelect();
+    this.readyImage = this.readyImage.bind(this);
+    this.readyPlots = this.readyPlots.bind(this);
+    this.readyPivot = this.readyPivot.bind(this);
+    this.contents = {
+      Image: {},
+      Plots: {},
+      Pivot: {}
+    };
+    this.cname = 'Image';
+    this.stream.subscribe("Select", "Surf3d", (select) => {
+      return this.onSelect(select);
     });
   }
 
-  onSelect() {
-    var id;
+  ready(cname) {
     boundMethodCheck(this, Surf3d);
-    if (this.created) {
-      return;
+    switch (cname) {
+      case 'Image':
+        return this.readyImage();
+      case 'Plots':
+        return this.readyPlots();
+      case 'Pivot':
+        return this.readyPivot();
+      default:
+        console.error('Surf3d.ready() unknown cname', cname);
+        this.cname = 'Image';
+        return this.readyImage();
     }
-    id = this.name + this.cname;
-    this.$pane = $(`<div id="${id}" class="plotly-graph-div"></div>`);
-    this.pane.$.append(this.$pane);
-    this.geom = this.pane.geom();
-    //console.log( 'Geom', @geom )
-    Plotly.plot(id, {
-      data: this.data(),
-      layout: this.layout(),
-      frames: [],
-      config: this.config()
-    });
-    this.created = true;
+  }
+
+  onSelect(select) {
+    switch (select.intent) {
+      case UI.SelectView:
+        return this.readyImage();
+      case UI.SelectPane:
+        return this.readyPlots();
+      default:
+        return this.readyImage();
+    }
+  }
+
+  hide() {
+    var con, key, ref, results;
+    ref = this.contents;
+    results = [];
+    for (key in ref) {
+      if (!hasProp.call(ref, key)) continue;
+      con = ref[key];
+      if (con.$ != null) {
+        results.push(con.$.hide());
+      } else {
+        results.push(void 0);
+      }
+    }
+    return results;
+  }
+
+  readyImage() {
+    var $c, id, style;
+    boundMethodCheck(this, Surf3d);
+    this.cname = 'Image';
+    if (this.contents.Image.$ == null) {
+      id = this.name + this.cname;
+      this.geom = this.pane.geom();
+      style = `max-width:${this.geom.wp}px; max-height:${this.geom.hp}px;`;
+      $c = $(`<div id="${id}"><img src="img/Surf3D.png" style="${style}" /></div>`);
+      this.pane.$.append($c);
+      this.contents.Image.$ = $c;
+    }
+    this.hide();
+    return this.contents.Image.$.show();
+  }
+
+  readyPlots() {
+    var $c, id;
+    boundMethodCheck(this, Surf3d);
+    this.cname = 'Plots';
+    if (this.contents.Plots.$ == null) {
+      id = this.name + this.cname;
+      $c = $(`<div id="${id}" class="plotly-graph-div"></div>`);
+      this.pane.$.append($c);
+      this.contents.Plots.$ = $c;
+      this.geom = this.pane.geom();
+      //console.log( 'Geom', @geom )
+      Plotly.plot(id, {
+        data: this.data(),
+        layout: this.layout(),
+        frames: [],
+        config: this.config()
+      });
+    }
+    this.hide();
+    this.contents.Plots.$.show();
+  }
+
+  readyPivot() {
+    var $c, id;
+    boundMethodCheck(this, Surf3d);
+    if (this.contents.Pivot.$ == null) {
+      id = this.name + this.cname;
+      $c = $(`<h1 id="${id}" style=" display:grid; justify-self:center; align-self:center; ">${this.name}</h1>`);
+      this.pane.$.append($c);
+      this.contents.Pivot.$ = $c;
+    }
+    this.hide();
+    return this.contents.Pivot.$.show();
   }
 
   config() {
