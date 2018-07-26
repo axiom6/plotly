@@ -23,7 +23,8 @@ Page = class Page {
       Icons: {},
       Pivot: {},
       Study: {},
-      Icon: {}
+      Icon: {},
+      Ikw: {}
     };
     this.contenta = Object.keys(this.contents);
     this.cname = "Study";
@@ -33,13 +34,7 @@ Page = class Page {
   ready(cname) {
     var $c, content, empty;
     empty = Util.isObjEmpty(this.contents[cname]);
-    if (this.stream.isInfo('Content')) {
-      console.info('Page.ready()', {
-        name: this.name,
-        cname: cname,
-        empty: empty
-      });
-    }
+    //console.info('Page.ready()', { name:@name, cname:cname, empty:empty } ) if @stream.isInfo('Content')
     content = this.ui.createContent(this.pane, this, cname);
     $c = content.ready();
     content.layout();

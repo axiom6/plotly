@@ -23,14 +23,14 @@ App = (function() {
           subjects: ["Select", "Choice", "Test"]
         };
         stream = new Stream(subjects, infoSpec);
-        ui = new UI(stream, "json/app.json", "None", App.NavbSpecs);
+        ui = new UI(stream, App.Specs, App.NavbSpecs);
         app = new App(stream, ui);
-        Util.noop(app);
+        app.ready();
       });
     }
 
     constructor(stream1, ui1) {
-      this.onReady = this.onReady.bind(this);
+      this.ready = this.ready.bind(this);
       this.stream = stream1;
       this.ui = ui1;
       this.stream.subscribe("Ready", "App", () => {
@@ -39,11 +39,13 @@ App = (function() {
       this.surf3d = new Surf3d(this.stream, this.ui);
     }
 
-    onReady() {
+    ready() {
       this.ui.pagesReady('Image', false);
     }
 
   };
+
+  App.Specs = UI.pracJSON("json/app.json");
 
   App.NavbSubjects = ["Search", "Contact", "Settings", "SignOn"];
 

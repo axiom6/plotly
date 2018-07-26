@@ -7,6 +7,8 @@
 
 class App
 
+  App.Specs = UI.pracJSON( "json/app.json" )
+
   @init = () ->
     UI.hasPack = false
     UI.hasTocs = true
@@ -18,9 +20,9 @@ class App
       subjects = subjects.concat( App.NavbSubjects )
       infoSpec = { subscribe:false, publish:false, subjects:["Select","Choice","Test"]}
       stream   = new Stream( subjects, infoSpec )
-      ui       = new UI(  stream, "json/app.json", "None", App.NavbSpecs )
+      ui       = new UI(  stream, App.Specs, App.NavbSpecs )
       app      = new App( stream, ui )
-      Util.noop( app )
+      app.ready()
       return
     return
 
@@ -28,7 +30,7 @@ class App
     @stream.subscribe( "Ready", "App", () => @onReady() )
     @surf3d = new Surf3d( @stream, @ui )
 
-  onReady:() =>
+  ready:() =>
     @ui.pagesReady( 'Image', false )
     return
 

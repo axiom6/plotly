@@ -34,7 +34,6 @@ Surf3d = class Surf3d extends Base {
         return this.readyPivot();
       default:
         console.error('Surf3d.ready() unknown cname', cname);
-        this.cname = 'Image';
         return this.readyImage();
     }
   }
@@ -93,7 +92,7 @@ Surf3d = class Surf3d extends Base {
       this.contents.Plots.$ = $c;
       this.geom = this.pane.geom();
       //console.log( 'Geom', @geom )
-      Plotly.plot(id, {
+      Plotly.react(id, {
         data: this.data(),
         layout: this.layout(),
         frames: [],

@@ -18,7 +18,6 @@ class Surf3d extends Base
       when 'Pivot' then @readyPivot()
       else
         console.error( 'Surf3d.ready() unknown cname', cname )
-        @cname = 'Image'
         @readyImage()
 
   onSelect:( select ) ->
@@ -52,7 +51,7 @@ class Surf3d extends Base
       @contents.Plots.$ = $c
       @geom = @pane.geom()
       #console.log( 'Geom', @geom )
-      Plotly.plot(  id,  { data:@data(), layout:@layout(), frames:[], config:@config() } )
+      Plotly.react(  id,  { data:@data(), layout:@layout(), frames:[], config:@config() } )
     @hide()
     @contents.Plots.$.show()
     return
