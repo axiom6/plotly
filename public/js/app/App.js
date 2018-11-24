@@ -1,4 +1,5 @@
 import Util   from '../util/Util.js';
+import Data   from '../util/Data.js';
 import Stream from '../util/Stream.js';
 import UI     from '../ui/UI.js';
 import Page   from '../ui/Page.js';
@@ -7,12 +8,11 @@ var App;
 
 App = (function() {
   class App {
-    static init() {
+    static init(data) {
+      App.Specs = Data.createPracs(data);
       UI.hasPack = false;
       UI.hasTocs = true;
       UI.hasLays = true;
-      UI.local = "http://localhost:63342/plotly/public/"; // Every app needs to change this
-      UI.hosted = "https://ui-48413.firebaseapp.com/"; // Every app needs to change this
       Util.ready(function() {
         var app, infoSpec, stream, subjects, ui;
         subjects = ["Ready", "Select", "Choice", "Test"];
@@ -45,7 +45,11 @@ App = (function() {
 
   };
 
-  App.Specs = UI.pracJSON("json/app.json");
+  Data.local = "http://localhost:63342/plotly/public/"; // Every app needs to change this
+
+  Data.hosted = "https://ui-48413.firebaseapp.com/"; // Every app needs to change this
+
+  Data.asyncJSON("json/app.json", App.init);
 
   App.NavbSubjects = ["Search", "Contact", "Settings", "SignOn"];
 
@@ -124,7 +128,5 @@ App = (function() {
   return App;
 
 }).call(this);
-
-App.init();
 
 export default App;

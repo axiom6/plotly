@@ -2,7 +2,6 @@ import Util from '../util/Util.js';
 import Navb from '../ui/Navb.js';
 import Tocs from '../ui/Tocs.js';
 import View from '../ui/View.js';
-import Page from '../ui/Page.js';
 import Vis  from '../vis/Vis.js';
 var UI,
   hasProp = {}.hasOwnProperty;
@@ -16,6 +15,8 @@ UI = (function() {
       this.specs = specs;
       this.navbs = navbs;
       this.pages = {};
+      this.cname = 'Study';
+      this.$text = UI.$empty;
       if (this.navbs != null) {
         this.navb = new Navb(this, this.stream, this.navbs);
       }
@@ -44,6 +45,7 @@ UI = (function() {
 
     pagesReady(cname, append = true) {
       var name, page, pane, ref;
+      this.cname = cname;
       ref = this.pages;
       for (name in ref) {
         if (!hasProp.call(ref, name)) continue;
@@ -59,7 +61,7 @@ UI = (function() {
             pane.$.append(page.$pane);
           }
         } else {
-          page.ready(cname);
+          page.$pane = page.ready(cname);
         }
       }
     }
@@ -133,139 +135,10 @@ UI = (function() {
       return ($elem != null) && ($elem.length != null) && $elem.length > 0;
     }
 
-    static createPacks(data) {
-      var gkey, pack;
-      for (gkey in data) {
-        pack = data[gkey];
-        if (!(UI.isChild(gkey))) {
-          continue;
-        }
-        pack['name'] = gkey;
-        data[gkey] = pack;
-        pack.practices = {};
-        this.createPracs(pack);
-      }
-      return data;
-    }
-
-    static createPracs(data) {
-      var ikey, item, pkey, practice, skey, study, tkey, topic;
-      for (pkey in data) {
-        practice = data[pkey];
-        if (!(UI.isChild(pkey))) {
-          continue;
-        }
-        if (practice['name'] == null) {
-          practice['name'] = pkey;
-        }
-        practice.studies = {};
-        if (data.practices != null) {
-          data.practices[pkey] = practice;
-        }
-        for (skey in practice) {
-          study = practice[skey];
-          if (!(UI.isChild(skey))) {
-            continue;
-          }
-          if (study['name'] == null) {
-            study['name'] = skey;
-          }
-          study.topics = {};
-          practice.studies[skey] = study;
-          for (tkey in study) {
-            topic = study[tkey];
-            if (!(UI.isChild(tkey))) {
-              continue;
-            }
-            if (topic['name'] == null) {
-              topic['name'] = tkey;
-            }
-            topic.items = {};
-            study.topics[tkey] = topic;
-            for (ikey in topic) {
-              item = topic[ikey];
-              if (!(UI.isChild(ikey))) {
-                continue;
-              }
-              if (item['name'] == null) {
-                item['name'] = ikey;
-              }
-              topic.items[ikey] = item;
-            }
-          }
-        }
-      }
-      return data;
-    }
-
     static nrowncol(data) {
       Util.noop(data);
       UI.nrow = 4; // if data.nrow? then data.nrow else UI.nrow
       return UI.ncol = 3; // if data.ncol? then data.ncol else UI.ncol
-    }
-
-    static jQueryHasNotBeenLoaded() {
-      if (typeof jQuery === 'undefined') {
-        console.error('UI JQuery has not been loaded');
-        return true;
-      } else {
-        return false;
-      }
-    }
-
-    static readJSON(url, callback) {
-      var settings;
-      if (UI.jQueryHasNotBeenLoaded()) {
-        return;
-      }
-      url = UI.baseUrl() + url;
-      settings = {
-        url: url,
-        type: 'GET',
-        dataType: 'json',
-        processData: false,
-        contentType: 'application/json',
-        accepts: 'application/json'
-      };
-      settings.success = (data, status, jqXHR) => {
-        Util.noop(status, jqXHR);
-        return callback(data);
-      };
-      settings.error = (jqXHR, status, error) => {
-        Util.noop(jqXHR);
-        return console.error("UI.readJSON()", {
-          url: url,
-          status: status,
-          error: error
-        });
-      };
-      $.ajax(settings);
-    }
-
-    static syncJSON(path) {
-      var jqxhr;
-      jqxhr = $.ajax({
-        type: "GET",
-        url: path,
-        dataType: 'json',
-        cache: false,
-        async: false
-      });
-      return jqxhr['responseJSON'];
-    }
-
-    static pracJSON(path) {
-      return UI.createPracs(UI.syncJSON(path));
-    }
-
-    static packJSON(path) {
-      return UI.createPacks(UI.syncJSON(path));
-    }
-
-    static isChild(key) {
-      var a;
-      a = key.charAt(0);
-      return a === a.toUpperCase() && a !== '$';
     }
 
     static toTopic(name, source, intent, study = null) {
@@ -299,14 +172,6 @@ UI = (function() {
       return verify;
     }
 
-    static baseUrl() {
-      if (window.location.href.includes('localhost')) {
-        return UI.local;
-      } else {
-        return UI.hosted;
-      }
-    }
-
   };
 
   UI.hasPack = true;
@@ -314,10 +179,6 @@ UI = (function() {
   UI.hasTocs = true;
 
   UI.hasLays = true;
-
-  UI.local = "http://localhost:63342/ui/public/"; // Every app needs to change this
-
-  UI.hosted = "https://jitter-48413.firebaseapp.com/"; // Every app needs to change this
 
   UI.$empty = $();
 
@@ -338,7 +199,6 @@ UI = (function() {
     hStudy: 0.5
   };
 
-  //I.margin  =  { width:0.00, height:0.00, west:0.5, north :0, east :0.5, south:0, wStudy:0.5, hStudy:0.5 }
   UI.SelectView = 'SelectView';
 
   UI.SelectPane = 'SelectPane';
